@@ -38,12 +38,13 @@ async function getInfo() {
       async ({ CITY, STREET, csrfToken }) => {
         const formData = new URLSearchParams()
         formData.append("method", "getHomeNum")
-//        formData.append("data[0][name]", "city")
-//        formData.append("data[0][value]", CITY)
-        formData.append("data[1][name]", "street")
-        formData.append("data[1][value]", STREET)
-        formData.append("data[2][name]", "updateFact")
-        formData.append("data[2][value]", new Date().toLocaleString("uk-UA"))
+        // Київський сайт не потребує city
+        // formData.append("data[0][name]", "city")
+        // formData.append("data[0][value]", CITY)
+        formData.append("data[0][name]", "street")
+        formData.append("data[0][value]", STREET)
+        formData.append("data[1][name]", "updateFact")
+        formData.append("data[1][value]", new Date().toLocaleString("uk-UA"))
 
         const response = await fetch("/ua/ajax", {
           method: "POST",
@@ -85,6 +86,7 @@ function checkIsOutage(info) {
   return isOutageDetected
 }
 
+// Залишаємо для сумісності, але не використовуємо для блокування
 function checkIsScheduled(info) {
   console.log("🌀 Checking whether power outage scheduled...")
 
@@ -169,14 +171,6 @@ async function run() {
     return
   }
 
-  if (isOutage) {
-    const message = generateMessage(info)
-    await sendNotification(message)
-  }
-}
-
-
-  const isScheduled = checkIsScheduled(info)
   if (isOutage) {
     const message = generateMessage(info)
     await sendNotification(message)
