@@ -13,23 +13,19 @@ export function loadLastMessage() {
 
   try {
     const rawData = fs.readFileSync(LAST_MESSAGE_FILE, "utf8").trim()
-    
-    // Якщо файл порожній або містить пустий об'єкт {}
     if (!rawData || rawData === "{}") return null
 
     const lastMessage = JSON.parse(rawData)
-
-    // Додаткова перевірка: якщо немає message_id, вважаємо файл пустим
     if (!lastMessage.message_id) return null
 
     return lastMessage
   } catch (e) {
-    // Якщо JSON битий, повертаємо null
     return null
   }
 }
 
 export function saveLastMessage({ date, message_id } = {}) {
+  // Цей рядок автоматично створює папку artifacts, якщо її немає
   fs.mkdirSync(path.dirname(LAST_MESSAGE_FILE), { recursive: true })
   fs.writeFileSync(
     LAST_MESSAGE_FILE,
@@ -41,11 +37,9 @@ export function saveLastMessage({ date, message_id } = {}) {
 }
 
 export function deleteLastMessage() {
-  // ВАЖЛИВА ЗМІНА:
-  // Ми не видаляємо файл фізично, щоб не ламати git add artifacts/ в GitHub Actions.
-  // Замість цього ми записуємо туди пустий JSON.
-  
+  // Цей рядок теж відновлює папку, якщо її хтось видалив
   fs.mkdirSync(path.dirname(LAST_MESSAGE_FILE), { recursive: true })
+  // Замість видалення ми просто чистимо файл. Git буде задоволений.
   fs.writeFileSync(LAST_MESSAGE_FILE, "{}")
 }
 
