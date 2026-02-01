@@ -11,21 +11,22 @@ export function capitalize(str) {
 export function loadLastMessage() {
   if (!fs.existsSync(LAST_MESSAGE_FILE)) return null
 
-  const lastMessage = JSON.parse(
-    fs.readFileSync(LAST_MESSAGE_FILE, "utf8").trim()
-  )
+  try {
+    const rawData = fs.readFileSync(LAST_MESSAGE_FILE, "utf8").trim()
+    
+    // Якщо файл порожній або містить пустий об'єкт {}
+    if (!rawData || rawData === "{}") return null
 
-  if (lastMessage?.date) {
-    const messageDay = new Date(lastMessage.date * 1000).toLocaleDateString(
-      "en-CA",
-      { timeZone: "Europe/Kyiv" }
-    )
-    const today = new Date().toLocaleDateString("en-CA", {
-      timeZone: "Europe/Kyiv",
-    })
+    const lastMessage = JSON.parse(rawData)
+
+    // Додаткова перевірка: якщо немає message_id, вважаємо файл пустим
+    if (!lastMessage.message_id) return null
+
+    return lastMessage
+  } catch (e) {
+    // Якщо JSON битий, повертаємо null
+    return null
   }
-
-  return lastMessage
 }
 
 export function saveLastMessage({ date, message_id } = {}) {
@@ -40,7 +41,12 @@ export function saveLastMessage({ date, message_id } = {}) {
 }
 
 export function deleteLastMessage() {
-  fs.rmdirSync(path.dirname(LAST_MESSAGE_FILE), { recursive: true })
+  // ВАЖЛИВА ЗМІНА:
+  // Ми не видаляємо файл фізично, щоб не ламати git add artifacts/ в GitHub Actions.
+  // Замість цього ми записуємо туди пустий JSON.
+  
+  fs.mkdirSync(path.dirname(LAST_MESSAGE_FILE), { recursive: true })
+  fs.writeFileSync(LAST_MESSAGE_FILE, "{}")
 }
 
 export function getCurrentTime() {
