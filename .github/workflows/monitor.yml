@@ -45,7 +45,7 @@ jobs:
           if ! git diff --cached --quiet; then
             LAST_COMMIT_MSG=$(git log -1 --pretty=%B || echo "")
             if [ "$LAST_COMMIT_MSG" = "chore: update artifacts" ]; then
-              git commit --amend --no-edit
+              git commit --amend --no-edit --allow-empty
             else
               git commit -m "chore: update artifacts"
             fi
