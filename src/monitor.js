@@ -181,18 +181,26 @@ async function run() {
     
     // Якщо у нас зберігся файл про відключення, значить світло ТІЛЬКИ ЩО дали
     if (lastMessage) {
-        console.log("💚 Power restored! Updating status...")
+        console.log("💚 Power restored! Deleting previous outage message...")
         
-        // Оновлюємо старе повідомлення на "Зелене"
-        await sendNotification(
-            [
-                "💚 <b>Електропостачання відновлено!</b>",
-                "",
-                `💬 <i>${getCurrentTime()}</i>`
-            ].join("\n")
-        )
+        // Видаляємо повідомлення про відключення
+        try {
+            if (lastMessage.message_id) {
+                await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/deleteMessage`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        chat_id: TELEGRAM_CHAT_ID,
+                        message_id: lastMessage.message_id
+                    })
+                })
+                console.log("🗑️ Message deleted successfully.")
+            }
+        } catch (error) {
+            console.error("🔴 Failed to delete message:", error.message)
+        }
         
-        // Тепер, коли ми сповістили, можна видаляти файл.
+        // Тепер можна видаляти файл.
         // Наступне відключення прийде новим повідомленням.
         deleteLastMessage()
     } else {
